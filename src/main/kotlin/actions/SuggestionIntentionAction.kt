@@ -9,6 +9,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import model.ModelFacade
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import utils.PsiUtils.Companion.getMethodBody
 
 class SuggestionIntentionAction : IntentionAction {
 
@@ -16,9 +17,10 @@ class SuggestionIntentionAction : IntentionAction {
         if (editor == null || file == null) return
         val offset: Int = editor.caretModel.offset
         val psiMethod = PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod::class.java) ?: return
-        val methodBody = psiMethod.body ?: return
-        ModelFacade().generateSuggestions(methodBody.text)
-        val suggestionsList = ModelFacade().getSuggestions()
+        val model = ModelFacade()
+        val methodBody = getMethodBody(psiMethod)
+        model.generateSuggestions(methodBody)
+        val suggestionsList: List<String> = model.getSuggestions()
         val listPopup = JBPopupFactory.getInstance().createListPopup(
                 SuggestionListPopupStep("Suggestions", suggestionsList, editor, file)
         )

@@ -37,6 +37,8 @@ patchPluginXml {
 }
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile group: 'org.tensorflow', name: 'tensorflow', version: '1.5.0'
+    compile 'com.github.javaparser:javaparser-core:3.0.0-alpha.4'
 }
 compileKotlin {
     kotlinOptions {

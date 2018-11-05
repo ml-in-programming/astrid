@@ -12,12 +12,14 @@ class SuggestionListPopupStep(
         aTitle: String, aValues: List<String>, private var editor: Editor, private val psiFile: PsiFile
 ) : BaseListPopupStep<String>(aTitle, aValues) {
 
-    override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<String> {
-        renameMethodRefactoring(selectedValue as String)
-        return super.onChosen(selectedValue, finalChoice) as PopupStep<String>
+    private var selectedMethodName: String? = null
+
+    override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
+        selectedMethodName = selectedValue
+        return super.onChosen(selectedValue, finalChoice)
     }
 
-    private fun renameMethodRefactoring(selectedValue: String) {
+    private fun doRenameMethodRefactoring(selectedValue: String) {
         val elementAt = psiFile.findElementAt(editor.caretModel.offset) ?: return
         val refactoringFactory = RefactoringFactoryImpl.getInstance(editor.project)
         val rename = refactoringFactory.createRename(findNamedElement(elementAt), selectedValue)
@@ -30,5 +32,9 @@ class SuggestionListPopupStep(
             is PsiNamedElement -> return element
             else -> return findNamedElement(element.parent)
         }
+    }
+
+    override fun getFinalRunnable(): Runnable? {
+        return Runnable { doRenameMethodRefactoring(selectedMethodName as String) }
     }
 }
