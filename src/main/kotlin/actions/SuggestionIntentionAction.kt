@@ -1,15 +1,24 @@
 package actions
 
 import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.psi.util.PsiTreeUtil
 
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import model.ModelFacade
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import downloader.Downloader
 import utils.PsiUtils.Companion.getMethodBody
+import utils.FileUtils
+import utils.PsiUtils.Companion.executeWriteAction
+import java.net.URL
+import java.nio.file.Files
 
 class SuggestionIntentionAction : IntentionAction {
 
@@ -17,15 +26,35 @@ class SuggestionIntentionAction : IntentionAction {
         if (editor == null || file == null) return
         val offset: Int = editor.caretModel.offset
         val psiMethod = PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod::class.java) ?: return
-        val model = ModelFacade()
-        val methodBody = getMethodBody(psiMethod)
-        model.generateSuggestions(methodBody)
-        val suggestionsList: List<String> = model.getSuggestions()
-        val listPopup = JBPopupFactory.getInstance().createListPopup(
-                SuggestionListPopupStep("Suggestions", suggestionsList, editor, file)
-        )
-        listPopup.showInBestPositionFor(editor)
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Method name suggestions", true) {
+            override fun run(indicator: ProgressIndicator) {
+                var suggestionsList: List<String> = emptyList()
+                if (!Files.exists(Downloader.getModelPath())) {
+                    Downloader.getPluginPath().toFile().mkdir()
+                    Downloader.downloadArchive(URL(Downloader.modelLink), Downloader.getArchivePath(),
+                            ProgressManager.getInstance().progressIndicator)
+                    ProgressManager.getInstance().progressIndicator.text = "Extracting archive"
+                    FileUtils.unzip(Downloader.getArchivePath().toString(), Downloader.getModelPath().toString())
+                }
+
+                runReadAction {
+                    indicator.text = "Generating suggestions"
+                    val model = ModelFacade()
+                    val methodBody = getMethodBody(psiMethod)
+                    model.generateSuggestions(methodBody)
+                    suggestionsList = model.getSuggestions()
+                }
+
+                executeWriteAction(project, file) {
+                    val listPopup = JBPopupFactory.getInstance().createListPopup(
+                            SuggestionListPopupStep("Suggestions", suggestionsList, editor, file)
+                    )
+                    listPopup.showInBestPositionFor(editor)
+                }
+            }
+        })
     }
+
 
     override fun getText(): String {
         return "Generate suggestions"

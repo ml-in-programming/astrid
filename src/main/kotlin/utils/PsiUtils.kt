@@ -1,5 +1,8 @@
 package utils
 
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierList
@@ -7,11 +10,13 @@ import com.intellij.psi.PsiType
 
 class PsiUtils {
     companion object {
-        /* Extracts method signature and body, then concatenates them*/
+        /**
+         * Extracts method signature and body, then concatenates them
+         */
         fun getMethodBody(method: PsiMethod): String {
             val methodBody = method.body ?: return ""
             val space = " "
-            val modifierList: PsiModifierList = method.getModifierList()
+            val modifierList: PsiModifierList = method.modifierList
             val parameterList = method.parameterList
             val parameters = parameterList.parameters
             val methodName = method.name
@@ -44,8 +49,15 @@ class PsiUtils {
                 methodSignature.append(parameterName)
             }
             methodSignature.append(')')
-            val fullMethod: String = methodSignature.toString() + space + methodBody.text
-            return fullMethod
+            return methodSignature.toString() + space + methodBody.text
+        }
+
+        fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {
+            object : WriteCommandAction.Simple<Any>(project, file) {
+                override fun run() {
+                    body()
+                }
+            }.execute()
         }
     }
 }

@@ -1,5 +1,7 @@
 package model
 
+import downloader.Downloader.getModelPath
+import downloader.Downloader.modelSubDir
 import org.tensorflow.SavedModelBundle
 import org.tensorflow.Session
 import org.tensorflow.Tensor
@@ -8,21 +10,19 @@ import utils.PathUtils.Companion.getCombinedPaths
 import kotlin.collections.ArrayList
 
 class ModelFacade {
-    private val modelPath = "/home/zkurbatova/projects/models/export/"
     private val tfModel: SavedModelBundle
     private var suggestions: List<String>
 
     init {
-        tfModel = SavedModelBundle.load(modelPath, "serve")
+        tfModel = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
         suggestions = emptyList()
-        println("Мodel is successfully loaded\n")
     }
 
     fun getSuggestions(): List<String> {
         return this.suggestions
     }
 
-    fun parseResults(predictions: List<String>): List<String> {
+    private fun parseResults(predictions: List<String>): List<String> {
         var parsedPredictions = ArrayList<String>()
         for (p in predictions) {
             if (p.contains("|")) {
@@ -44,12 +44,12 @@ class ModelFacade {
         val session: Session = tfModel.session()
         val runner = session.runner()
         val tokens: List<String> = paths.split("\\s+")
-        val matrix = Array<Array<ByteArray?>>(1) { arrayOfNulls<ByteArray>(tokens.size) }
+        val matrix = Array(1) { arrayOfNulls<ByteArray>(tokens.size) }
         for (i in 0 until tokens.size) {
             matrix[0][i] = tokens[i].toByteArray(Charsets.UTF_8)
         }
         val inputTensor = Tensor.create(matrix, String::class.java)
-        val outputTensor: Tensor<*> = runner.feed("Placeholder:0", inputTensor).fetch("hash_table_Lookup:0").run().get(0)
+        val outputTensor: Tensor<*> = runner.feed("Placeholder:0", inputTensor).fetch("hash_table_Lookup:0").run()[0]
         val predictions: List<String> = convertBinaryToString(outputTensor)
         outputTensor.close()
         this.suggestions = parseResults(predictions)
