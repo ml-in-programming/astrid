@@ -2,7 +2,6 @@ package extractor.visitors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -10,7 +9,6 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import extractor.common.Common;
 import extractor.common.MethodContent;
 
-@SuppressWarnings("StringEquality")
 public class FunctionVisitor extends VoidVisitorAdapter<Object> {
     private ArrayList<MethodContent> methods = new ArrayList<>();
 
@@ -30,7 +28,7 @@ public class FunctionVisitor extends VoidVisitorAdapter<Object> {
         ArrayList<String> splitNameParts = Common.splitToSubtokens(node.getName());
         String splitName = normalizedMethodName;
         if (splitNameParts.size() > 0) {
-            splitName = splitNameParts.stream().collect(Collectors.joining(Common.INTERNAL_SEPARATOR));
+            splitName = String.join(Common.INTERNAL_SEPARATOR, splitNameParts);
         }
 
         if (node.getBody() != null) {
@@ -47,8 +45,8 @@ public class FunctionVisitor extends VoidVisitorAdapter<Object> {
         if (cleanCode.length() == 0) {
             return 0;
         }
-        long codeLength = Arrays.asList(cleanCode.split("\n")).stream()
-                .filter(line -> (line.trim() != "{" && line.trim() != "}" && line.trim() != ""))
+        long codeLength = Arrays.stream(cleanCode.split("\n"))
+                .filter(line -> (!line.trim().equals("{") && !line.trim().equals("}") && !line.trim().equals("")))
                 .filter(line -> !line.trim().startsWith("/") && !line.trim().startsWith("*")).count();
         return codeLength;
     }

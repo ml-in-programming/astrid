@@ -1,7 +1,5 @@
 package extractor.features;
 
-import com.github.javaparser.ParseException;
-import com.github.javaparser.ast.CompilationUnit;
 import extractor.common.Common;
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,25 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExtractFeaturesFromCodeBlock {
-    String code;
-    CompilationUnit m_CompilationUnit;
+    private String code;
 
     public ExtractFeaturesFromCodeBlock(String codeBlock) {
         this.code = codeBlock;
     }
 
-    public ArrayList<ProgramFeatures> extractFromCodeBlock() throws IOException, ParseException {
+    private ArrayList<ProgramFeatures> extractFromCodeBlock() throws IOException {
         FeatureExtractor featureExtractor = new FeatureExtractor(code);
-        ArrayList<ProgramFeatures> features = featureExtractor.extractFeatures();
-        m_CompilationUnit = featureExtractor.getParsedFile();
-        return features;
+        return featureExtractor.extractFeatures();
     }
 
     public String processCodeBlock() {
         ArrayList<ProgramFeatures> features;
         try {
             features = extractFromCodeBlock();
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return "";
         }
@@ -43,18 +38,17 @@ public class ExtractFeaturesFromCodeBlock {
         return "";
     }
 
-    public String featuresToString(ArrayList<ProgramFeatures> features) {
+    private String featuresToString(ArrayList<ProgramFeatures> features) {
         if (features == null || features.isEmpty()) {
             return Common.EMPTY_STRING;
         }
 
         List<String> methodsOutputs = new ArrayList<>();
 
-        for (ProgramFeatures singleMethodfeatures : features) {
+        for (ProgramFeatures singleMethodFeatures : features) {
             StringBuilder builder = new StringBuilder();
-
             String toPrint = Common.EMPTY_STRING;
-            toPrint = singleMethodfeatures.toString();
+            toPrint = singleMethodFeatures.toString();
             builder.append(toPrint);
             methodsOutputs.add(builder.toString());
         }

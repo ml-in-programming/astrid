@@ -49,7 +49,7 @@ public class LeavesCollectorVisitor extends TreeVisitor {
         return !(node instanceof Comment) && !(node instanceof Statement);
     }
 
-    public ArrayList<Node> getLeaves() {
+    ArrayList<Node> getLeaves() {
         return leaves;
     }
 

@@ -12,7 +12,7 @@ class PathUtils {
         fun getCombinedPaths(methodBody: String): String {
             val predictLines = getContextsFromMethodBody(methodBody)
             val parts: List<String> = predictLines.split(' ')
-            val methodName = parts.get(0)
+            val methodName = parts[0]
             val currentResultLineParts = arrayListOf<String>(methodName)
             val contexts = parts.subList(1, parts.size)
             val maxContextsCount = 200
@@ -22,9 +22,9 @@ class PathUtils {
             var contextWord2: String
             var hashedPath: String
             var resultLine = ""
-            val cc = contexts.subList(0, maxContextsCount - 1)
-            for (c: String in cc) {
-                contextParts = c.split(',')
+            val list = if (contexts.size < maxContextsCount) contexts else contexts.subList(0, maxContextsCount - 1)
+            for (context: String in list) {
+                contextParts = context.split(',')
                 contextWord1 = contextParts.get(0)
                 contextPath = contextParts.get(1)
                 contextWord2 = contextParts.get(2)
@@ -38,7 +38,6 @@ class PathUtils {
             for (i in 0..spaceCount - 2) {
                 resultLine += " "
             }
-            println("Paths are successfully extracted\n")
             return resultLine
         }
     }

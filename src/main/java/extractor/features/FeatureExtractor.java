@@ -9,16 +9,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseException;
-import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import extractor.common.Common;
 import extractor.common.MethodContent;
 import extractor.visitors.FunctionVisitor;
 
-@SuppressWarnings("StringEquality")
-public class FeatureExtractor {
+class FeatureExtractor {
     private String code;
     private CompilationUnit compilationUnit;
     private static Set<String> parentTypeToAddChildId = Stream
@@ -30,52 +27,29 @@ public class FeatureExtractor {
     private final static String upSymbol = "^";
     private final static String downSymbol = "_";
 
-    public FeatureExtractor(String code) {
+    FeatureExtractor(String code) {
         this.code = code;
     }
 
-    public CompilationUnit getParsedFile() {
-        return compilationUnit;
-    }
-
-    public ArrayList<ProgramFeatures> extractFeatures() throws ParseException, IOException {
+    ArrayList<ProgramFeatures> extractFeatures() throws IOException {
         compilationUnit = parseFileWithRetries(code);
         FunctionVisitor functionVisitor = new FunctionVisitor();
-
         functionVisitor.visit(compilationUnit, null);
-
         ArrayList<MethodContent> methods = functionVisitor.getMethodContents();
-        ArrayList<ProgramFeatures> programs = generatePathFeatures(methods);
-
-        return programs;
+        return generatePathFeatures(methods);
     }
 
-    private CompilationUnit parseFileWithRetries(String code) throws IOException {
+    private CompilationUnit parseFileWithRetries(String code) {
         final String classPrefix = "public class A {";
         final String classSuffix = "}";
-        final String methodPrefix = "SomeUnknownReturnType f() {";
-        final String methodSuffix = "return noSuchReturnValue; }";
-
-        String originalContent = code;
-        String content = originalContent;
-        CompilationUnit parsed = null;
-        try {
-            parsed = JavaParser.parse(content);
-        } catch (ParseProblemException e1) {
-            // Wrap with a class and method
-            try {
-                content = classPrefix + methodPrefix + originalContent + methodSuffix + classSuffix;
-                parsed = JavaParser.parse(content);
-            } catch (ParseProblemException e2) {
-                // Wrap with a class only
-                content = classPrefix + originalContent + classSuffix;
-                parsed = JavaParser.parse(content);
-            }
-        }
+        String content;
+        CompilationUnit parsed;
+        content = classPrefix + code + classSuffix;
+        parsed = JavaParser.parse(content);
         return parsed;
     }
 
-    public ArrayList<ProgramFeatures> generatePathFeatures(ArrayList<MethodContent> methods) {
+    private ArrayList<ProgramFeatures> generatePathFeatures(ArrayList<MethodContent> methods) {
         ArrayList<ProgramFeatures> methodsFeatures = new ArrayList<>();
         for (MethodContent content : methods) {
             if (content.getLength() < 1
@@ -98,7 +72,7 @@ public class FeatureExtractor {
                 String separator = Common.EMPTY_STRING;
 
                 String path = generatePath(functionLeaves.get(i), functionLeaves.get(j), separator);
-                if (path != Common.EMPTY_STRING) {
+                if (!path.equals(Common.EMPTY_STRING)) {
                     Property source = functionLeaves.get(i).getUserData(Common.PROPERTY_KEY);
                     Property target = functionLeaves.get(j).getUserData(Common.PROPERTY_KEY);
                     programFeatures.addFeature(source, path, target);
@@ -119,8 +93,6 @@ public class FeatureExtractor {
     }
 
     private String generatePath(Node source, Node target, String separator) {
-        String down = downSymbol;
-        String up = upSymbol;
         String startSymbol = lparen;
         String endSymbol = rparen;
         int maxLength = 8;
@@ -162,7 +134,7 @@ public class FeatureExtractor {
                         .toString();
             }
             stringBuilder.add(String.format("%s%s%s%s%s", startSymbol,
-                    currentNode.getUserData(Common.PROPERTY_KEY).getType(), childId, endSymbol, up));
+                    currentNode.getUserData(Common.PROPERTY_KEY).getType(), childId, endSymbol, upSymbol));
         }
 
         Node commonNode = sourceStack.get(sourceStack.size() - commonPrefix);
@@ -186,7 +158,7 @@ public class FeatureExtractor {
                 childId = saturateChildId(currentNode.getUserData(Common.CHILD_ID))
                         .toString();
             }
-            stringBuilder.add(String.format("%s%s%s%s%s", down, startSymbol,
+            stringBuilder.add(String.format("%s%s%s%s%s", downSymbol, startSymbol,
                     currentNode.getUserData(Common.PROPERTY_KEY).getType(), childId, endSymbol));
         }
 

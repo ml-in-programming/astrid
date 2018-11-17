@@ -5,7 +5,7 @@ public class ProgramRelation {
     private Property target;
     private String path;
 
-    public ProgramRelation(Property sourceName, Property targetName, String path) {
+    ProgramRelation(Property sourceName, Property targetName, String path) {
         source = sourceName;
         target = targetName;
         this.path = path;

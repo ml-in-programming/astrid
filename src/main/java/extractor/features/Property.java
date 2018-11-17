@@ -19,7 +19,7 @@ public class Property {
     private String name;
     private String splitName;
     private String operator;
-    public static final HashSet<String> NUMERICAL_KEEP_VALUES = Stream.of("0", "1", "32", "64")
+    private static final HashSet<String> NUMERICAL_KEEP_VALUES = Stream.of("0", "1", "32", "64")
             .collect(Collectors.toCollection(HashSet::new));
 
     public Property(Node node, boolean isLeaf, boolean isGenericParent, int id) {
@@ -44,17 +44,12 @@ public class Property {
         if (isGenericParent) {
             nameToSplit = ((ClassOrInterfaceType) node).getName();
             if (isLeaf) {
-                // if it is a generic parent which counts as a leaf, then when
-                // it is participating in a path
-                // as a parent, it should be GenericClass and not a simple
-                // ClassOrInterfaceType.
                 type = "GenericClass";
             }
         }
         ArrayList<String> splitNameParts = Common.splitToSubtokens(nameToSplit);
-        splitName = splitNameParts.stream().collect(Collectors.joining(Common.INTERNAL_SEPARATOR));
+        splitName = String.join(Common.INTERNAL_SEPARATOR, splitNameParts);
 
-        node.toString();
         name = Common.normalizeName(node.toString(), Common.BLANK);
         if (name.length() > Common.MAX_LABEL_LENGTH) {
             name = name.substring(0, Common.MAX_LABEL_LENGTH);
@@ -69,13 +64,12 @@ public class Property {
         if (splitName.length() == 0) {
             splitName = name;
             if (node instanceof IntegerLiteralExpr && !NUMERICAL_KEEP_VALUES.contains(splitName)) {
-                // This is a numeric literal, but not in our white list
                 splitName = "<NUM>";
             }
         }
     }
 
-    public String getRawType() {
+    String getRawType() {
         return rawType;
     }
 
@@ -83,7 +77,7 @@ public class Property {
         return type;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 }
