@@ -2,6 +2,7 @@ package utils
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
@@ -50,6 +51,16 @@ class PsiUtils {
             }
             methodSignature.append(')')
             return methodSignature.toString() + space + methodBody.text
+        }
+
+        fun calculateHighlightRange(method: PsiMethod): TextRange {
+            val start = 0
+            val spaceCount = 2
+            val modifiersTextRange = method.modifierList.textRange
+            val returnType = method.returnType ?: return TextRange.EMPTY_RANGE
+            val end = modifiersTextRange.endOffset - modifiersTextRange.startOffset + method.name.length + returnType
+                    .presentableText.length + spaceCount
+            return TextRange(start, end)
         }
 
         fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {

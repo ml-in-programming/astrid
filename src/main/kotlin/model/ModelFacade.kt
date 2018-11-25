@@ -10,12 +10,10 @@ import utils.PathUtils.Companion.getCombinedPaths
 import kotlin.collections.ArrayList
 
 class ModelFacade {
-    private val tfModel: SavedModelBundle
-    private var suggestions: List<String>
+    private var suggestions: List<String> = emptyList()
 
-    init {
-        tfModel = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
-        suggestions = emptyList()
+    companion object {
+        private val tfModel: SavedModelBundle = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
     }
 
     fun getSuggestions(): List<String> {
