@@ -16,6 +16,7 @@ import downloader.Downloader
 import model.ModelFacade
 import utils.PsiUtils
 import utils.PsiUtils.Companion.calculateHighlightRange
+import utils.PsiUtils.Companion.caretInsideMethodBlock
 import java.nio.file.Files
 
 class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
@@ -27,19 +28,24 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
     class MethodVisitor(private val holder: ProblemsHolder) : JavaElementVisitor() {
 
         override fun visitMethod(method: PsiMethod?) {
-            if (method == null) return
-            if (!Files.exists(Downloader.getModelPath())) return
-            val suggestionsList: List<String>
-            val methodBody = PsiUtils.getMethodBody(method)
-            val model = ModelFacade()
-            model.generateSuggestions(methodBody)
-            suggestionsList = model.getSuggestions()
-            if (!suggestionsList.contains(method.name)) {
-                holder.registerProblem(method, "Model has name suggestions for this method",
-                        ProblemHighlightType.WEAK_WARNING, calculateHighlightRange(method),
-                        RenameMethodQuickFix(suggestionsList))
+            when {
+                method == null -> return
+                caretInsideMethodBlock(method) -> return
+                !Files.exists(Downloader.getModelPath()) -> return
+                else -> {
+                    val suggestionsList: List<String>
+                    val methodBody = PsiUtils.getMethodBody(method)
+                    val model = ModelFacade()
+                    model.generateSuggestions(methodBody)
+                    suggestionsList = model.getSuggestions()
+                    if (!suggestionsList.contains(method.name)) {
+                        holder.registerProblem(method, "Model has name suggestions for this method",
+                                ProblemHighlightType.WEAK_WARNING, calculateHighlightRange(method),
+                                RenameMethodQuickFix(suggestionsList))
+                    }
+                    super.visitMethod(method)
+                }
             }
-            super.visitMethod(method)
         }
     }
 

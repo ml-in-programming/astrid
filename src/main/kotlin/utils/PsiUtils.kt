@@ -8,6 +8,9 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiModifierList
 import com.intellij.psi.PsiType
+import com.intellij.openapi.actionSystem.DataConstants
+import com.intellij.ide.DataManager
+import com.intellij.openapi.editor.Editor
 
 class PsiUtils {
     companion object {
@@ -18,26 +21,18 @@ class PsiUtils {
             val methodBody = method.body ?: return ""
             val space = " "
             val modifierList: PsiModifierList = method.modifierList
-            val parameterList = method.parameterList
-            val parameters = parameterList.parameters
-            val methodName = method.name
+            val parameters = method.parameterList.parameters
             val methodSignature = StringBuilder(256)
             if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
-                methodSignature.append(PsiModifier.PUBLIC)
-                methodSignature.append(space)
+                methodSignature.append(PsiModifier.PUBLIC).append(space)
             } else if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
-                methodSignature.append(PsiModifier.PRIVATE)
-                methodSignature.append(space)
+                methodSignature.append(PsiModifier.PRIVATE).append(space)
             }
             if (modifierList.hasModifierProperty(PsiModifier.STATIC)) {
-                methodSignature.append(PsiModifier.STATIC)
-                methodSignature.append(space)
+                methodSignature.append(PsiModifier.STATIC).append(space)
             }
             val returnType = method.returnType?.presentableText
-            methodSignature.append(returnType)
-            methodSignature.append(space)
-            methodSignature.append(methodName)
-            methodSignature.append('(')
+            methodSignature.append(returnType).append(space).append(method.name).append('(')
             for (i in parameters.indices) {
                 if (i != 0) {
                     methodSignature.append(',')
@@ -45,13 +40,19 @@ class PsiUtils {
                 val parameterName: String? = parameters[i].name
                 val parameterType: PsiType = parameters[i].type
                 val parameterTypeText = parameterType.presentableText
-                methodSignature.append(parameterTypeText)
-                methodSignature.append(space)
-                methodSignature.append(parameterName)
+                methodSignature.append(parameterTypeText).append(space).append(parameterName)
             }
             methodSignature.append(')')
             return methodSignature.toString() + space + methodBody.text
         }
+
+        fun caretInsideMethodBlock(method: PsiMethod): Boolean {
+            val methodTextRange = method.textRange
+            val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor? ?: return true
+            val caret = editor.caretModel.primaryCaret.offset
+            return (caret > methodTextRange.startOffset) && (caret < methodTextRange.endOffset)
+        }
+
 
         fun calculateHighlightRange(method: PsiMethod): TextRange {
             val start = 0
