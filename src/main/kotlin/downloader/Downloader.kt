@@ -20,9 +20,9 @@ object Downloader {
     const val modelLink = "https://www.dropbox.com/s/th55181ifs279wy/model.zip?dl=1"
     private val tmp: String = System.getProperty("java.io.tmpdir")
 
-    fun getArchivePath() = Paths.get(tmp, pluginName, archiveName)!!
-    fun getPluginPath() = Paths.get(tmp, pluginName)!!
-    fun getModelPath() = Paths.get(tmp, pluginName, dirName)!!
+    fun getArchivePath(): Path = Paths.get(tmp, pluginName, archiveName)
+    fun getPluginPath(): Path = Paths.get(tmp, pluginName)
+    fun getModelPath(): Path = Paths.get(tmp, pluginName, dirName)
 
     fun checkArchive() {
         val progressManager: ProgressManager = ProgressManager.getInstance();

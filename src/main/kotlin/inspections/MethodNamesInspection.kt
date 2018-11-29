@@ -15,8 +15,8 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
 import model.ModelFacade
 import utils.PsiUtils
-import utils.PsiUtils.Companion.calculateHighlightRange
-import utils.PsiUtils.Companion.caretInsideMethodBlock
+import utils.PsiUtils.calculateHighlightRange
+import utils.PsiUtils.caretInsideMethodBlock
 import java.nio.file.Files
 
 class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
@@ -49,7 +49,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         }
     }
 
-    class RenameMethodQuickFix(val suggestions: List<String>) : LocalQuickFix {
+    class RenameMethodQuickFix(private val suggestions: List<String>) : LocalQuickFix {
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             val file = descriptor.psiElement.containingFile
             val editor = FileEditorManager.getInstance(project).selectedTextEditor!!

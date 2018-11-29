@@ -14,9 +14,9 @@ import com.intellij.psi.PsiMethod
 import model.ModelFacade
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
-import utils.PsiUtils.Companion.getMethodBody
+import utils.PsiUtils.getMethodBody
 import utils.FileUtils
-import utils.PsiUtils.Companion.executeWriteAction
+import utils.PsiUtils.executeWriteAction
 import java.net.URL
 import java.nio.file.Files
 

@@ -12,64 +12,63 @@ import com.intellij.openapi.actionSystem.DataConstants
 import com.intellij.ide.DataManager
 import com.intellij.openapi.editor.Editor
 
-class PsiUtils {
-    companion object {
-        /**
-         * Extracts method signature and body, then concatenates them
-         */
-        fun getMethodBody(method: PsiMethod): String {
-            val methodBody = method.body ?: return ""
-            val space = " "
-            val modifierList: PsiModifierList = method.modifierList
-            val parameters = method.parameterList.parameters
-            val methodSignature = StringBuilder(256)
-            if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
-                methodSignature.append(PsiModifier.PUBLIC).append(space)
-            } else if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
-                methodSignature.append(PsiModifier.PRIVATE).append(space)
+object PsiUtils {
+    /**
+     * Extracts method signature and body, then concatenates them
+     */
+    fun getMethodBody(method: PsiMethod): String {
+        val methodBody = method.body ?: return ""
+        val space = " "
+        val modifierList: PsiModifierList = method.modifierList
+        val parameters = method.parameterList.parameters
+        val methodSignature = StringBuilder(256)
+        if (modifierList.hasModifierProperty(PsiModifier.PUBLIC)) {
+            methodSignature.append(PsiModifier.PUBLIC).append(space)
+        } else if (modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
+            methodSignature.append(PsiModifier.PRIVATE).append(space)
+        }
+        if (modifierList.hasModifierProperty(PsiModifier.STATIC)) {
+            methodSignature.append(PsiModifier.STATIC).append(space)
+        }
+        val returnType = method.returnType?.presentableText
+        methodSignature.append(returnType).append(space).append(method.name).append('(')
+        for (i in parameters.indices) {
+            if (i != 0) {
+                methodSignature.append(',')
             }
-            if (modifierList.hasModifierProperty(PsiModifier.STATIC)) {
-                methodSignature.append(PsiModifier.STATIC).append(space)
-            }
-            val returnType = method.returnType?.presentableText
-            methodSignature.append(returnType).append(space).append(method.name).append('(')
-            for (i in parameters.indices) {
-                if (i != 0) {
-                    methodSignature.append(',')
-                }
-                val parameterName: String? = parameters[i].name
-                val parameterType: PsiType = parameters[i].type
-                val parameterTypeText = parameterType.presentableText
-                methodSignature.append(parameterTypeText).append(space).append(parameterName)
-            }
-            methodSignature.append(')')
-            return methodSignature.toString() + space + methodBody.text
+            val parameterName: String? = parameters[i].name
+            val parameterType: PsiType = parameters[i].type
+            val parameterTypeText = parameterType.presentableText
+            methodSignature.append(parameterTypeText).append(space).append(parameterName)
         }
-
-        fun caretInsideMethodBlock(method: PsiMethod): Boolean {
-            val methodTextRange = method.textRange
-            val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor? ?: return true
-            val caret = editor.caretModel.primaryCaret.offset
-            return (caret > methodTextRange.startOffset) && (caret < methodTextRange.endOffset)
-        }
-
-
-        fun calculateHighlightRange(method: PsiMethod): TextRange {
-            val start = 0
-            val spaceCount = 2
-            val modifiersTextRange = method.modifierList.textRange
-            val returnType = method.returnType ?: return TextRange.EMPTY_RANGE
-            val end = modifiersTextRange.endOffset - modifiersTextRange.startOffset + method.name.length + returnType
-                    .presentableText.length + spaceCount
-            return TextRange(start, end)
-        }
-
-        fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {
-            object : WriteCommandAction.Simple<Any>(project, file) {
-                override fun run() {
-                    body()
-                }
-            }.execute()
-        }
+        methodSignature.append(')')
+        return methodSignature.toString() + space + methodBody.text
     }
+
+    fun caretInsideMethodBlock(method: PsiMethod): Boolean {
+        val methodTextRange = method.textRange
+        val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor? ?: return true
+        val caret = editor.caretModel.primaryCaret.offset
+        return (caret > methodTextRange.startOffset) && (caret < methodTextRange.endOffset)
+    }
+
+
+    fun calculateHighlightRange(method: PsiMethod): TextRange {
+        val start = 0
+        val spaceCount = 2
+        val modifiersTextRange = method.modifierList.textRange
+        val returnType = method.returnType ?: return TextRange.EMPTY_RANGE
+        val end = modifiersTextRange.endOffset - modifiersTextRange.startOffset + method.name.length + returnType
+                .presentableText.length + spaceCount
+        return TextRange(start, end)
+    }
+
+    fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {
+        object : WriteCommandAction.Simple<Any>(project, file) {
+            override fun run() {
+                body()
+            }
+        }.execute()
+    }
+
 }

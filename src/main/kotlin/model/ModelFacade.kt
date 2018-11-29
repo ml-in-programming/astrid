@@ -6,7 +6,7 @@ import org.tensorflow.SavedModelBundle
 import org.tensorflow.Session
 import org.tensorflow.Tensor
 import helpers.TensorConverter.convertBinaryToString
-import utils.PathUtils.Companion.getCombinedPaths
+import utils.PathUtils.getCombinedPaths
 import kotlin.collections.ArrayList
 
 class ModelFacade {
