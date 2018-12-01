@@ -2,7 +2,6 @@ package utils
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifier
@@ -50,17 +49,6 @@ object PsiUtils {
         val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor? ?: return true
         val caret = editor.caretModel.primaryCaret.offset
         return (caret > methodTextRange.startOffset) && (caret < methodTextRange.endOffset)
-    }
-
-
-    fun calculateHighlightRange(method: PsiMethod): TextRange {
-        val start = 0
-        val spaceCount = 2
-        val modifiersTextRange = method.modifierList.textRange
-        val returnType = method.returnType ?: return TextRange.EMPTY_RANGE
-        val end = modifiersTextRange.endOffset - modifiersTextRange.startOffset + method.name.length + returnType
-                .presentableText.length + spaceCount
-        return TextRange(start, end)
     }
 
     fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {

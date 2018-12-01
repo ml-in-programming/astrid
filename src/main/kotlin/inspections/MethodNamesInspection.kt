@@ -15,7 +15,6 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
 import model.ModelFacade
 import utils.PsiUtils
-import utils.PsiUtils.calculateHighlightRange
 import utils.PsiUtils.caretInsideMethodBlock
 import java.nio.file.Files
 
@@ -40,8 +39,9 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
                     model.generateSuggestions(methodBody)
                     suggestionsList = model.getSuggestions()
                     if (!suggestionsList.contains(method.name)) {
-                        holder.registerProblem(method, "Model has name suggestions for this method",
-                                ProblemHighlightType.WEAK_WARNING, calculateHighlightRange(method),
+                        holder.registerProblem(method.nameIdentifier ?: method, "Model has name suggestions for " +
+                                "this method",
+                                ProblemHighlightType.WEAK_WARNING,
                                 RenameMethodQuickFix(suggestionsList))
                     }
                     super.visitMethod(method)
