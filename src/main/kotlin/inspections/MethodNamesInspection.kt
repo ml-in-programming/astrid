@@ -30,6 +30,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         override fun visitMethod(method: PsiMethod?) {
             when {
                 method == null -> return
+                method.isConstructor -> return
                 caretInsideMethodBlock(method) -> return
                 !Files.exists(Downloader.getModelPath()) -> return
                 else -> {
