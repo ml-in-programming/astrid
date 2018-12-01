@@ -33,6 +33,7 @@ object Downloader {
                     getPluginPath().toFile().mkdir()
                     downloadArchive(URL(modelLink), getArchivePath(),
                             ProgressManager.getInstance().progressIndicator)
+                    if (indicator.isCanceled) return
                     ProgressManager.getInstance().progressIndicator.text = "Extracting archive"
                     FileUtils.unzip(getArchivePath().toString(), getModelPath().toString())
                 }
@@ -51,7 +52,7 @@ object Downloader {
             val data = ByteArray(1024)
             var totalCount = 0
             var count = it.read(data, 0, 1024)
-            while (count != -1) {
+            while (count != -1 && !indicator.isCanceled) {
                 out.write(data, 0, count)
                 totalCount += count
                 if (contentLength == 0) {

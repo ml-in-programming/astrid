@@ -33,6 +33,7 @@ class SuggestionIntentionAction : IntentionAction {
                     Downloader.getPluginPath().toFile().mkdir()
                     Downloader.downloadArchive(URL(Downloader.modelLink), Downloader.getArchivePath(),
                             ProgressManager.getInstance().progressIndicator)
+                    if (indicator.isCanceled) return
                     ProgressManager.getInstance().progressIndicator.text = "Extracting archive"
                     FileUtils.unzip(Downloader.getArchivePath().toString(), Downloader.getModelPath().toString())
                 }
