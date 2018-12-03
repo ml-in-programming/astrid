@@ -51,6 +51,10 @@ object PsiUtils {
         return (caret > methodTextRange.startOffset) && (caret < methodTextRange.endOffset)
     }
 
+    fun hasSuperMethod(method: PsiMethod): Boolean {
+        return method.findSuperMethods().isNotEmpty()
+    }
+
     fun executeWriteAction(project: Project, file: PsiFile, body: () -> Unit) {
         object : WriteCommandAction.Simple<Any>(project, file) {
             override fun run() {

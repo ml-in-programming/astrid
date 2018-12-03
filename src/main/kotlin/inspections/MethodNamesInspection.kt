@@ -16,6 +16,7 @@ import downloader.Downloader
 import model.ModelFacade
 import utils.PsiUtils
 import utils.PsiUtils.caretInsideMethodBlock
+import utils.PsiUtils.hasSuperMethod
 import java.nio.file.Files
 
 class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
@@ -30,6 +31,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
             when {
                 method == null -> return
                 method.isConstructor -> return
+                hasSuperMethod(method) -> return
                 caretInsideMethodBlock(method) -> return
                 !Files.exists(Downloader.getModelPath()) -> return
                 else -> {
