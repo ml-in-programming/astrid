@@ -30,6 +30,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         override fun visitMethod(method: PsiMethod?) {
             when {
                 method == null -> return
+                method.body == null -> return
                 method.isConstructor -> return
                 hasSuperMethod(method) -> return
                 caretInsideMethodBlock(method) -> return
