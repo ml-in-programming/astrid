@@ -14,7 +14,6 @@ import com.intellij.psi.PsiMethod
 import model.ModelFacade
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
-import utils.PsiUtils.getMethodBody
 import utils.FileUtils
 import utils.PsiUtils.executeWriteAction
 import java.net.URL
@@ -40,10 +39,7 @@ class SuggestionIntentionAction : IntentionAction {
 
                 runReadAction {
                     indicator.text = "Generating suggestions"
-                    val model = ModelFacade()
-                    val methodBody = getMethodBody(psiMethod)
-                    model.generateSuggestions(methodBody)
-                    suggestionsList = model.getSuggestions()
+                    suggestionsList = ModelFacade().getSuggestions(psiMethod)
                 }
 
                 executeWriteAction(project, file) {

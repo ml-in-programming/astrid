@@ -13,6 +13,7 @@ import com.intellij.psi.PsiMethod
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
+import inspections.SuggestionsStorage.Companion.recalculateLater
 import model.ModelFacade
 import utils.PsiUtils
 import utils.PsiUtils.caretInsideMethodBlock
@@ -26,26 +27,25 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
     }
 
     class MethodVisitor(private val holder: ProblemsHolder) : JavaElementVisitor() {
-
         override fun visitMethod(method: PsiMethod?) {
             when {
                 method == null -> return
                 method.body == null -> return
                 method.isConstructor -> return
                 hasSuperMethod(method) -> return
-                caretInsideMethodBlock(method) -> return
                 !Files.exists(Downloader.getModelPath()) -> return
+                caretInsideMethodBlock(method) -> recalculateLater(method)
                 else -> {
-                    val suggestionsList: List<String>
-                    val methodBody = PsiUtils.getMethodBody(method)
-                    val model = ModelFacade()
-                    model.generateSuggestions(methodBody)
-                    suggestionsList = model.getSuggestions()
-                    if (!suggestionsList.contains(method.name)) {
+                    if (!SuggestionsStorage.contains(method) || SuggestionsStorage.needRecalculate(method)) {
+                        val suggestionsList: List<String> = ModelFacade().getSuggestions(method)
+                        SuggestionsStorage.put(method, suggestionsList)
+                    }
+                    val suggestions = SuggestionsStorage.getSuggestions(method)
+                    if (suggestions.isNotEmpty() && !suggestions.contains(method.name)) {
                         holder.registerProblem(method.nameIdentifier ?: method, "Model has name suggestions for " +
                                 "this method",
                                 ProblemHighlightType.WEAK_WARNING,
-                                RenameMethodQuickFix(suggestionsList))
+                                RenameMethodQuickFix(suggestions))
                     }
                     super.visitMethod(method)
                 }
