@@ -15,6 +15,7 @@
             <descriptionDirectoryName>SuggestionRequestAction</descriptionDirectoryName>
         </intentionAction>
         <inspectionToolProvider implementation="inspections.MethodNamesProvider"/>
+        <inspectionToolProvider implementation="inspections.ifstatement.IfStatementProvider"/>
 
     </extensions>
 

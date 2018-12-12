@@ -23,6 +23,11 @@ class ModelFacade {
         return parseResults(suggestionsList)
     }
 
+    fun getSuggestions(methodBody: String): List<String> {
+        val suggestionsList: List<String> = generatePredictions(methodBody)
+        return parseResults(suggestionsList)
+    }
+
     private fun parseResults(predictions: List<String>): List<String> {
         var parsedPredictions = ArrayList<String>()
         for (p in predictions) {
