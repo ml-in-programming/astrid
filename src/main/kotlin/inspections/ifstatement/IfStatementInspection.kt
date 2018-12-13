@@ -17,8 +17,11 @@ import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiIfStatement
+import com.intellij.psi.PsiMethod
+import downloader.Downloader
 import model.ModelFacade
 import org.jetbrains.uast.getContainingClass
+import java.nio.file.Files
 
 class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
@@ -28,6 +31,7 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
     private class IfStatementVisitor(private val holder: ProblemsHolder) : JavaElementVisitor() {
         override fun visitIfStatement(statement: PsiIfStatement?) {
             if (statement == null) return
+            if (!Files.exists(Downloader.getModelPath())) return
             val condition = statement.condition ?: return
             // TODO: Implement more meaningful conditions
             if (condition.textLength > 100) {
@@ -42,25 +46,46 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
     class ExtractIfStatementToMethod : LocalQuickFix {
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
             if (descriptor.psiElement == null) return
+            val currentMethod = descriptor.psiElement.parent.parent.parent as PsiMethod
+            val parametersArray = currentMethod.parameterList.parameters
+            var newMethodParameters = ""
+            var newMethodCallArgs = ""
+            val condition: String = descriptor.psiElement.text ?: ""
+            for (parameter in parametersArray) {
+                val parameterName: String = parameter.name ?: return
+                if (condition.contains(parameterName)) {
+                    if (newMethodParameters.isNotEmpty()) {
+                        newMethodParameters += ", "
+                        newMethodCallArgs += ", "
+                    }
+                    newMethodParameters += parameter.type.presentableText + " " + parameterName
+                    newMethodCallArgs += parameterName
+                }
+            }
             val temporarySignature = "public boolean f() {"
-            val condition = descriptor.psiElement.text + ";"
-            val methodName = ModelFacade().getSuggestions("$temporarySignature$condition\n }").get(0)
-            val methodBody = "public boolean $methodName() { return $condition }"
-            val facade = JavaPsiFacade.getInstance(project)
-            val factory = facade.elementFactory
-            val addNewMethod = Runnable {
-                val newPsiMethod = factory.createMethodFromText(methodBody, null)
+            val newMethodBody = "$condition;"
+            // TODO: Check if class contains method with the same name
+            val newMethodName = ModelFacade().getSuggestions("$temporarySignature$newMethodBody\n }").get(0)
+            val newMethodText = "private boolean $newMethodName($newMethodParameters) { return $newMethodBody\n }"
+
+            WriteCommandAction.runWriteCommandAction(project, addNewMethod(newMethodText, descriptor, project))
+            if (descriptor.psiElement is PsiExpression) {
+                val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor?
+                descriptor.psiElement.delete()
+                EditorModificationUtil.insertStringAtCaret(editor, "$newMethodName($newMethodCallArgs)", true)
+            }
+        }
+
+        private fun addNewMethod(newMethodText: String, descriptor: ProblemDescriptor, project: Project): Runnable {
+            return Runnable {
+                val facade = JavaPsiFacade.getInstance(project)
+                val factory = facade.elementFactory
+                val newPsiMethod = factory.createMethodFromText(newMethodText, null)
                 descriptor.psiElement.getContainingClass()?.add(newPsiMethod)
                 val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor?
                 if (editor != null) {
                     PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.document)
                 }
-            }
-            WriteCommandAction.runWriteCommandAction(project, addNewMethod)
-            if (descriptor.psiElement is PsiExpression) {
-                val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor?
-                descriptor.psiElement.delete()
-                EditorModificationUtil.insertStringAtCaret(editor, "$methodName()", true)
             }
         }
 
