@@ -64,8 +64,12 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
             }
             val temporarySignature = "public boolean f() {"
             val newMethodBody = "$condition;"
-            // TODO: Check if class contains method with the same name
-            val newMethodName = ModelFacade().getSuggestions("$temporarySignature$newMethodBody\n }").get(0)
+            val classMethodNames = arrayListOf<String>()
+            descriptor.psiElement.getContainingClass()?.methods?.forEach { m -> classMethodNames.add(m.name) }
+            val methodNameSuggestions = ArrayList(ModelFacade().getSuggestions("$temporarySignature$newMethodBody\n }"))
+            // Exclude name if class contains method with the same name
+            methodNameSuggestions.removeAll(classMethodNames)
+            val newMethodName = methodNameSuggestions.get(0)
             val newMethodText = "private boolean $newMethodName($newMethodParameters) { return $newMethodBody\n }"
 
             WriteCommandAction.runWriteCommandAction(project, addNewMethod(newMethodText, descriptor, project))
