@@ -39,7 +39,7 @@ class ModelFacade {
                 }
                 parsedPredictions.add(parsedMethodName)
             } else {
-                parsedPredictions.add(p)
+                if (p.length > 2) parsedPredictions.add(p)
             }
         }
         return parsedPredictions
