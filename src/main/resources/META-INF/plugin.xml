@@ -16,7 +16,9 @@
         </intentionAction>
         <inspectionToolProvider implementation="inspections.MethodNamesProvider"/>
         <inspectionToolProvider implementation="inspections.ifstatement.IfStatementProvider"/>
-
+        <applicationService serviceImplementation="stats.RenameMethodStatistics"/>
+        <applicationService serviceImplementation="logging.StatsSender"/>
+        <applicationService serviceImplementation="logging.RequestService"/>
     </extensions>
 
     <actions>

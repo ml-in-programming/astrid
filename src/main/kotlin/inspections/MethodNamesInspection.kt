@@ -34,6 +34,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
                 method.isConstructor -> return
                 hasSuperMethod(method) -> return
                 !Files.exists(Downloader.getModelPath()) -> return
+                SuggestionsStorage.ignore(method) -> return
                 caretInsideMethodBlock(method) -> recalculateLater(method)
                 else -> {
                     if (!SuggestionsStorage.contains(method) || SuggestionsStorage.needRecalculate(method)) {
@@ -53,8 +54,9 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         }
     }
 
-    class RenameMethodQuickFix(private val suggestions: List<String>) : LocalQuickFix {
+    class RenameMethodQuickFix(private var suggestions: List<String>) : LocalQuickFix {
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+            this.suggestions += "Suppress on this method"
             val file = descriptor.psiElement.containingFile
             val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
 
