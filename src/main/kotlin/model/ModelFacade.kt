@@ -42,13 +42,13 @@ class ModelFacade {
         val dictionary = unpickler.load(stream)
         val mapOfSubtokens = dictionary as HashMap<Int, String>
         for (indexes in listOfIndexes) {
-            var subtoken = mapOfSubtokens.get(indexes[0]) ?: ""
+            var name = mapOfSubtokens.get(indexes[0]) ?: ""
             for (i in indexes.subList(1, indexes.size)) {
-                var word: String? = mapOfSubtokens.get(i)
-                if (word != null && !word.equals("<PAD>") && !word.equals("<UNK>"))
-                    subtoken += word.substring(0, 1).toUpperCase() + word.substring(1)
+                var subtoken: String? = mapOfSubtokens.get(i)
+                if (subtoken != null && !subtoken.equals("<PAD>") && !subtoken.equals("<UNK>"))
+                    name += subtoken.substring(0, 1).toUpperCase() + subtoken.substring(1)
             }
-            predictions.add(subtoken)
+            predictions.add(name)
         }
         return predictions
     }
