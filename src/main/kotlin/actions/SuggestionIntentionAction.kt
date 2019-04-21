@@ -14,6 +14,7 @@ import com.intellij.psi.PsiMethod
 import model.ModelFacade
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import downloader.Downloader
+import inspections.Suggestion
 import utils.FileUtils
 import utils.PsiUtils.executeWriteAction
 import java.net.URL
@@ -27,7 +28,7 @@ class SuggestionIntentionAction : IntentionAction {
         val psiMethod = PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiMethod::class.java) ?: return
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Method name suggestions", true) {
             override fun run(indicator: ProgressIndicator) {
-                var suggestionsList: List<String> = emptyList()
+                var suggestionsList: Suggestion? = null
                 if (!Files.exists(Downloader.getModelPath())) {
                     Downloader.getPluginPath().toFile().mkdir()
                     Downloader.downloadArchive(URL(Downloader.modelLink), Downloader.getArchivePath(),
@@ -41,10 +42,10 @@ class SuggestionIntentionAction : IntentionAction {
                     indicator.text = "Generating suggestions"
                     suggestionsList = ModelFacade().getSuggestions(psiMethod)
                 }
-
+                if (suggestionsList == null) return
                 executeWriteAction(project, file) {
                     val listPopup = JBPopupFactory.getInstance().createListPopup(
-                            SuggestionListPopupStep("Suggestions", suggestionsList, editor, file)
+                            SuggestionListPopupStep("Suggestions", suggestionsList!!, editor, file)
                     )
                     listPopup.showInBestPositionFor(editor)
                 }

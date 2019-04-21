@@ -9,36 +9,33 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.refactoring.openapi.impl.RefactoringFactoryImpl
+import inspections.Suggestion
 import inspections.SuggestionsStorage
-import logging.FilePathProvider
-import logging.LogEvent
-import logging.RequestService
-import logging.StatsSender
 import stats.RenameMethodStatistics
 
 class SuggestionListPopupStep(
-        aTitle: String, aValues: List<String>, private var editor: Editor, private val psiFile: PsiFile
-) : BaseListPopupStep<String>(aTitle, aValues) {
+        aTitle: String, aValues: Suggestion, private var editor: Editor, private val psiFile: PsiFile
+) : BaseListPopupStep<Pair<String, Double>>(aTitle, aValues.names.toMutableList()) {
 
-    private var selectedMethodName: String? = null
+    private var selectedMethodName: Pair<String, Double> = Pair("", 0.0)
 
-    override fun onChosen(selectedValue: String?, finalChoice: Boolean): PopupStep<*>? {
+    override fun onChosen(selectedValue: Pair<String, Double>, finalChoice: Boolean): PopupStep<*>? {
         selectedMethodName = selectedValue
         return super.onChosen(selectedValue, finalChoice)
     }
 
-    private fun doRenameMethodRefactoring(selectedValue: String) {
+    private fun doRenameMethodRefactoring(selectedValue: Pair<String, Double>) {
         val elementAt = psiFile.findElementAt(editor.caretModel.offset) ?: return
-        if (selectedMethodName == "Suppress on this method") {
+        if (selectedMethodName.first == "Suppress on this method") {
             val psiMethod = PsiTreeUtil.getParentOfType(elementAt, PsiMethod::class.java) ?: return
             SuggestionsStorage.setIgnore(psiMethod)
             RenameMethodStatistics.ignoreCount()
             return
         }
         val refactoringFactory = RefactoringFactoryImpl.getInstance(editor.project)
-        val rename = refactoringFactory.createRename(findNamedElement(elementAt), selectedValue)
+        val rename = refactoringFactory.createRename(findNamedElement(elementAt), selectedValue.first)
         val usages = rename.findUsages()
-        RenameMethodStatistics.applyCount()
+        RenameMethodStatistics.applyCount(selectedValue.second)
         rename.doRefactoring(usages)
 /*        StatsSender(FilePathProvider(),
                 RequestService()).sendStatsData(LogEvent(RenameMethodStatistics.getInstance().state).toString())*/
@@ -52,6 +49,10 @@ class SuggestionListPopupStep(
     }
 
     override fun getFinalRunnable(): Runnable? {
-        return Runnable { doRenameMethodRefactoring(selectedMethodName as String) }
+        return Runnable { doRenameMethodRefactoring(selectedMethodName) }
+    }
+
+    override fun getTextFor(value: Pair<String, Double>): String {
+        return value.first
     }
 }

@@ -7,17 +7,20 @@ import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.DataConstants
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaElementVisitor
 import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiExpression
 import com.intellij.psi.PsiIfStatement
 import com.intellij.psi.PsiMethod
+import com.intellij.psi.util.PsiTreeUtil
 import downloader.Downloader
 import model.ModelFacade
 import org.jetbrains.uast.getContainingClass
@@ -63,20 +66,20 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
                 }
             }
             val temporarySignature = "public boolean f() {"
-            val newMethodBody = "$condition;"
+            val newMethodBody = "($condition);"
             val classMethodNames = arrayListOf<String>()
-            descriptor.psiElement.getContainingClass()?.methods?.forEach { m -> classMethodNames.add(m.name) }
-            val methodNameSuggestions = ArrayList(ModelFacade().getSuggestions("$temporarySignature$newMethodBody\n }"))
+            PsiTreeUtil.getParentOfType(descriptor.psiElement, PsiClass::class.java)?.methods?.forEach { m -> classMethodNames.add(m.name) }
+            val methodNameSuggestions = ModelFacade().getSuggestions("$temporarySignature return $newMethodBody\n }")
             // Exclude name if class contains method with the same name
-            methodNameSuggestions.removeAll(classMethodNames)
-            val newMethodName = methodNameSuggestions.get(0)
-            val newMethodText = "private boolean $newMethodName($newMethodParameters) { return $newMethodBody\n }"
+            classMethodNames.forEach { name -> methodNameSuggestions.removeName(name) }
+            val newMethodName = methodNameSuggestions.names.get(0).first
+            val newMethodText = "private boolean ${newMethodName}($newMethodParameters) { return $newMethodBody\n }"
 
             WriteCommandAction.runWriteCommandAction(project, addNewMethod(newMethodText, descriptor, project))
             if (descriptor.psiElement is PsiExpression) {
-                val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor?
+                val editor = DataManager.getInstance().dataContext.getData(PlatformDataKeys.EDITOR)
                 descriptor.psiElement.delete()
-                EditorModificationUtil.insertStringAtCaret(editor, "$newMethodName($newMethodCallArgs)", true)
+                EditorModificationUtil.insertStringAtCaret(editor, "${newMethodName}($newMethodCallArgs)", true)
             }
         }
 
@@ -85,8 +88,8 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
                 val facade = JavaPsiFacade.getInstance(project)
                 val factory = facade.elementFactory
                 val newPsiMethod = factory.createMethodFromText(newMethodText, null)
-                descriptor.psiElement.getContainingClass()?.add(newPsiMethod)
-                val editor = DataManager.getInstance().dataContext.getData(DataConstants.EDITOR) as Editor?
+                PsiTreeUtil.getParentOfType(descriptor.psiElement, PsiClass::class.java)?.add(newPsiMethod)
+                val editor = DataManager.getInstance().dataContext.getData(PlatformDataKeys.EDITOR)
                 if (editor != null) {
                     PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(editor.document)
                 }

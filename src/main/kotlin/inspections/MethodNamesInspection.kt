@@ -38,11 +38,11 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
                 caretInsideMethodBlock(method) -> recalculateLater(method)
                 else -> {
                     if (!SuggestionsStorage.contains(method) || SuggestionsStorage.needRecalculate(method)) {
-                        val suggestionsList: List<String> = ModelFacade().getSuggestions(method)
+                        val suggestionsList = ModelFacade().getSuggestions(method)
                         SuggestionsStorage.put(method, suggestionsList)
                     }
                     val suggestions = SuggestionsStorage.getSuggestions(method)
-                    if (suggestions.isNotEmpty() && !suggestions.contains(method.name)) {
+                    if (!suggestions!!.containsName(method.name)) {
                         holder.registerProblem(method.nameIdentifier ?: method, "Model has name suggestions for " +
                                 "this method",
                                 ProblemHighlightType.WEAK_WARNING,
@@ -54,9 +54,9 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         }
     }
 
-    class RenameMethodQuickFix(private var suggestions: List<String>) : LocalQuickFix {
+    class RenameMethodQuickFix(private var suggestions: Suggestion) : LocalQuickFix {
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-            this.suggestions += "Suppress on this method"
+            this.suggestions.addName("Suppress for the method")
             val file = descriptor.psiElement.containingFile
             val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
 

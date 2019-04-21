@@ -18,9 +18,9 @@ class RenameMethodStatistics : PersistentStateComponent<RenameMethodState> {
     }
 
     companion object {
-        fun applyCount() {
+        fun applyCount(score: Double) {
             val stats = getInstance().statsState
-            stats.applyRenameMethodCount()
+            stats.applyRenameMethodCount(score)
         }
 
         fun ignoreCount() {
@@ -36,9 +36,11 @@ class RenameMethodState {
 
     var applied: Int = 0
     var ignored: Int = 0
+    var scores: ArrayList<Double> = ArrayList()
 
-    fun applyRenameMethodCount() {
+    fun applyRenameMethodCount(score: Double) {
         applied += 1
+        scores.add(score)
     }
 
     fun ignoreRenameMethodCount() {

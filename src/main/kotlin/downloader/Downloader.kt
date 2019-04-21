@@ -14,10 +14,12 @@ import java.nio.file.Paths
 
 object Downloader {
     private const val archiveName = "model.zip"
-    private const val dirName = "code2vec-model"
+    private const val dirName = "model"
     private const val pluginName = "astrid_plugin"
     const val modelSubDir = "/model"
-    const val modelLink = "https://www.dropbox.com/s/th55181ifs279wy/model.zip?dl=1"
+    const val beamSubDir = "/beam_search/_beam_search_ops.so"
+    const val dictSubDir = "/model/dict/targets.dict"
+    const val modelLink = "https://www.dropbox.com/s/44xurm93j2lcg06/model.zip?dl=1"
     private val tmp: String = System.getProperty("java.io.tmpdir")
 
     fun getArchivePath(): Path = Paths.get(tmp, pluginName, archiveName)
@@ -42,7 +44,7 @@ object Downloader {
     }
 
     fun downloadArchive(url: URL, path: Path, indicator: ProgressIndicator) {
-        indicator.text = "Downloading code2vec model"
+        indicator.text = "Downloading code2seq model"
         path.toFile().parentFile.mkdirs()
         val urlConnection = url.openConnection()
         val contentLength = urlConnection.contentLength

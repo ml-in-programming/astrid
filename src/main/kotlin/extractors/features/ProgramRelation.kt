@@ -3,8 +3,8 @@ package extractors.features
 class ProgramRelation(private val source: Property, private val target: Property, private val path: String) {
 
     override fun toString(): String {
-        return String.format("%s,%s,%s", source.name, path,
-                target.name)
+        return String.format("%s,%s,%s", source.getName(), path,
+                target.getName())
     }
 
 }

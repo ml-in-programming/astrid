@@ -12,8 +12,8 @@ object Common {
     val CHILD_ID: UserDataKey<Int> = object : UserDataKey<Int>() {
     }
     const val EMPTY_STRING = ""
-    private const val METHOD_DECLARATION = "METHOD_DECLARATION"
-    private const val NAME_EXPR = "NAME_EXPR"
+    private const val METHOD_DECLARATION = "MethodDeclaration"
+    private const val NAME_EXPR = "NameExpr"
     const val BLANK = "BLANK"
     const val MAX_LABEL_LENGTH = 50
     const val METHOD_NAME = "METHOD_NAME"
@@ -41,7 +41,7 @@ object Common {
     fun isMethod(node: Node, type: String?): Boolean {
         val parentProperty = node.parentNode.getUserData(PROPERTY_KEY) ?: return false
         val parentType = parentProperty.type
-        return type == NAME_EXPR && parentType == METHOD_DECLARATION
+        return NAME_EXPR.equals(type) && METHOD_DECLARATION.equals(parentType)
     }
 
     fun splitToSubtokens(str: String): ArrayList<String> {

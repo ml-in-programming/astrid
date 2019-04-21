@@ -8,21 +8,21 @@ class SuggestionsStorage {
     companion object {
         private var map: HashMap<SmartPsiElementPointer<PsiMethod>, Suggestion> = HashMap()
 
-        fun getSuggestions(method: PsiMethod): List<String> {
+        fun getSuggestions(method: PsiMethod): Suggestion? {
             val pointer = SmartPointerManager.getInstance(method.project).createSmartPsiElementPointer(method)
             val suggestion = map.get(pointer)
             if (suggestion != null) {
-                return suggestion.names
+                return suggestion
             }
-            return emptyList()
+            return null
         }
 
-        fun put(method: PsiMethod, list: List<String>) {
+        fun put(method: PsiMethod, suggestion: Suggestion) {
             val pointer = SmartPointerManager.getInstance(method.project).createSmartPsiElementPointer(method)
             if (map.contains(pointer)) {
-                map.replace(pointer, Suggestion(list))
+                map.replace(pointer, suggestion)
             } else {
-                map.put(pointer, Suggestion(list))
+                map.put(pointer, suggestion)
             }
         }
 

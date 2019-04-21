@@ -1,10 +1,11 @@
 package inspections
 
 /**
- * This class contains information about suggestion for method name
- *
+ * This class contains information about suggestion for method.
+ * Suggestion is a list of pairs of the type (name, score),
+ * where score is a probability of the corresponding name
  */
-class Suggestion(val names: List<String>) {
+class Suggestion(val names: ArrayList<Pair<String, Double>>) {
     var needRecalculate: Boolean = false
 
     var ignore: Boolean = false
@@ -15,5 +16,22 @@ class Suggestion(val names: List<String>) {
 
     fun setIgnore() {
         this.ignore = true
+    }
+
+    fun containsName(name: String): Boolean {
+        for (pair in names) {
+            if (pair.first.equals(name)) return true
+        }
+        return false
+    }
+
+    fun addName(value: String) {
+        this.names.add(Pair(value, -1.0))
+    }
+
+    fun removeName(value: String) {
+        for (pair in names) {
+            if (pair.first.equals(value)) names.remove(pair)
+        }
     }
 }

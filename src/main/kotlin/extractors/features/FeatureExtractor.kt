@@ -4,22 +4,19 @@ import com.github.javaparser.JavaParser
 import com.github.javaparser.ast.CompilationUnit
 import com.github.javaparser.ast.Node
 import extractors.common.Common
+import extractors.common.Common.INTERNAL_SEPARATOR
 import extractors.common.MethodContent
 import extractors.visitors.FunctionVisitor
 import java.util.StringJoiner
 
-class FeatureExtractor(code: String) {
-    private var code: String
+class FeatureExtractor(private var code: String) {
+
     private var compilationUnit: CompilationUnit
-    private val maxContentLength = 10000
-    private val parentTypeToAddChildId: List<String> = listOf("AssignExpr", "FieldAccessExpr", "MethodCallExpr")
-    private val lparen = "("
-    private val rparen = ")"
-    private val upSymbol = "^"
-    private val downSymbol = "_"
+    private val parentTypeToAddChildId: List<String> = listOf(
+            "AssignExpr", "ArrayAccessExpr", "FieldAccessExpr", "MethodCallExpr"
+    )
 
     init {
-        this.code = code
         compilationUnit = parseFileWithRetries(this.code)
     }
 
@@ -41,8 +38,6 @@ class FeatureExtractor(code: String) {
     private fun generatePathFeatures(methods: ArrayList<MethodContent>): ArrayList<ProgramFeatures> {
         val methodsFeatures = ArrayList<ProgramFeatures>()
         for (content in methods) {
-            if (content.length < 1 || content.length > maxContentLength)
-                continue
             val singleMethodFeatures = generatePathFeaturesForFunction(content)
             if (singleMethodFeatures.features.size != 0) {
                 methodsFeatures.add(singleMethodFeatures)
@@ -70,8 +65,6 @@ class FeatureExtractor(code: String) {
     }
 
     private fun generatePath(source: Node, target: Node, separator: String): String {
-        val startSymbol = lparen
-        val endSymbol = rparen
         val maxLength = 8
         val maxWidth = 2
 
@@ -110,8 +103,8 @@ class FeatureExtractor(code: String) {
                 childId = saturateChildId(currentNode.getUserData(Common.CHILD_ID))
                         .toString()
             }
-            stringBuilder.add(String.format("%s%s%s%s%s", startSymbol,
-                    currentNode.getUserData(Common.PROPERTY_KEY).type, childId, endSymbol, upSymbol))
+            stringBuilder.add(String.format("%s%s%s",
+                    currentNode.getUserData(Common.PROPERTY_KEY).getType(true), childId, INTERNAL_SEPARATOR))
         }
 
         val commonNode = sourceStack[sourceStack.size - commonPrefix]
@@ -125,8 +118,8 @@ class FeatureExtractor(code: String) {
             commonNodeChildId = saturateChildId(commonNode.getUserData(Common.CHILD_ID))
                     .toString()
         }
-        stringBuilder.add(String.format("%s%s%s%s", startSymbol,
-                commonNode.getUserData(Common.PROPERTY_KEY).type, commonNodeChildId, endSymbol))
+        stringBuilder.add(String.format("%s%s",
+                commonNode.getUserData(Common.PROPERTY_KEY).getType(true), commonNodeChildId))
 
         for (i in targetStack.size - commonPrefix - 1 downTo 0) {
             val currentNode = targetStack[i]
@@ -135,8 +128,8 @@ class FeatureExtractor(code: String) {
                 childId = saturateChildId(currentNode.getUserData(Common.CHILD_ID))
                         .toString()
             }
-            stringBuilder.add(String.format("%s%s%s%s%s", downSymbol, startSymbol,
-                    currentNode.getUserData(Common.PROPERTY_KEY).type, childId, endSymbol))
+            stringBuilder.add(String.format("%s%s%s", INTERNAL_SEPARATOR,
+                    currentNode.getUserData(Common.PROPERTY_KEY).getType(true), childId))
         }
 
         return stringBuilder.toString()
