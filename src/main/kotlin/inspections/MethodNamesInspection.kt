@@ -56,7 +56,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
 
     class RenameMethodQuickFix(private var suggestions: Suggestion) : LocalQuickFix {
         override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-            this.suggestions.addName("Suppress for the method")
+            this.suggestions.addName("Suppress on this method")
             val file = descriptor.psiElement.containingFile
             val editor = FileEditorManager.getInstance(project).selectedTextEditor!!
 
