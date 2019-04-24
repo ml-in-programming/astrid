@@ -27,7 +27,7 @@ repositories {
 }
 
 intellij {
-    version '2018.2'
+    version '2018.3.4'
     pluginName 'astrid'
     intellij.updateSinceUntilBuild false
 }
@@ -50,5 +50,11 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+}
+
+jar {
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }

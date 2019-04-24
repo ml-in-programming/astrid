@@ -12,7 +12,6 @@ import helpers.TensorConverter.parsePredictions
 import helpers.TensorConverter.parseScores
 import inspections.Suggestion
 import net.razorvine.pickle.Unpickler
-import org.tensorflow.TensorFlow
 import utils.PathUtils.getCombinedPaths
 import utils.PsiUtils
 import java.io.FileInputStream
@@ -22,7 +21,8 @@ import kotlin.collections.ArrayList
 class ModelFacade {
 
     companion object {
-        private val beamSearchModule = TensorFlow.loadLibrary(getModelPath().toString() + modelSubDir + beamSubDir);
+        private val beamSearchModule = org.tensorflow.TensorFlow.loadLibrary(getModelPath().toString() + modelSubDir
+                + beamSubDir);
         private val tfModel: SavedModelBundle = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
     }
 
@@ -69,9 +69,10 @@ class ModelFacade {
 
         val resultPairs: ArrayList<Pair<String, Double>> = ArrayList()
         for (i in 0 until parsedPredictions.size) {
-            if (parsedPredictions[i].isNotEmpty()
-                    && !parsedPredictions[i].equals("<UNK>") && !parsedPredictions[i].equals("<PAD>")) {
-                resultPairs.add(Pair(parsedPredictions[i], scores[i]))
+            val currentPrediction: String = parsedPredictions[i]
+            if (currentPrediction.isNotEmpty() && !currentPrediction.equals(currentPrediction.toLowerCase())
+                    && !currentPrediction.equals("<UNK>") && !currentPrediction.equals("<PAD>")) {
+                resultPairs.add(Pair(currentPrediction, scores[i]))
             }
         }
 

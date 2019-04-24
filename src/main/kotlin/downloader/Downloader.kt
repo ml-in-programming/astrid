@@ -29,7 +29,7 @@ object Downloader {
     fun checkArchive() {
         val progressManager: ProgressManager = ProgressManager.getInstance();
         progressManager.run(object : Task.Backgroundable(ProjectManager.getInstance().defaultProject,
-                "Generating method names", true) {
+                "Generating suggestions", true) {
             override fun run(indicator: ProgressIndicator) {
                 if (!Files.exists(getModelPath())) {
                     getPluginPath().toFile().mkdir()
@@ -44,7 +44,7 @@ object Downloader {
     }
 
     fun downloadArchive(url: URL, path: Path, indicator: ProgressIndicator) {
-        indicator.text = "Downloading code2seq model"
+        indicator.text = "astrid: Downloading model..."
         path.toFile().parentFile.mkdirs()
         val urlConnection = url.openConnection()
         val contentLength = urlConnection.contentLength
