@@ -20,9 +20,9 @@ object Downloader {
     private const val pluginName = "astrid_plugin"
     const val modelSubDir = "/model"
     const val beamSubDirLinux = "/beam_search/_beam_search_ops.so"
-    const val beamSubDirMac = "/beam_search/_beam_search_ops_macos.so"
+    const val beamSubDirMac = "/beam_search/mac/_beam_search_ops.so"
     const val dictSubDir = "/model/dict/targets.dict"
-    const val modelLink = "https://www.dropbox.com/s/uc00go6x6bwc2xo/model.zip?dl=1"
+    const val modelLink = "https://www.dropbox.com/s/j2ydkxq3js33d93/model.zip?dl=1"
     private val tmp: String = System.getProperty("java.io.tmpdir")
 
     fun getArchivePath(): Path = Paths.get(tmp, pluginName, archiveName)
