@@ -41,6 +41,7 @@ dependencies {
     compile group: 'org.tensorflow', name: 'tensorflow', version: '1.13.1'
     compile 'com.github.javaparser:javaparser-core:3.0.0-alpha.4'
     compile group: 'net.razorvine', name: 'pyrolite', version: '4.19'
+    compile group: 'org.eclipse.mylyn.github', name: 'org.eclipse.egit.github.core', version: '2.1.5'
 }
 compileKotlin {
     kotlinOptions {

@@ -4,6 +4,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.ProjectManager
+import enums.OSType
 import utils.FileUtils
 import java.io.BufferedInputStream
 import java.io.FileOutputStream
@@ -11,15 +12,17 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 
 object Downloader {
     private const val archiveName = "model.zip"
     private const val dirName = "model"
     private const val pluginName = "astrid_plugin"
     const val modelSubDir = "/model"
-    const val beamSubDir = "/beam_search/_beam_search_ops.so"
+    const val beamSubDirLinux = "/beam_search/_beam_search_ops.so"
+    const val beamSubDirMac = "/beam_search/_beam_search_ops_macos.so"
     const val dictSubDir = "/model/dict/targets.dict"
-    const val modelLink = "https://www.dropbox.com/s/44xurm93j2lcg06/model.zip?dl=1"
+    const val modelLink = "https://www.dropbox.com/s/uc00go6x6bwc2xo/model.zip?dl=1"
     private val tmp: String = System.getProperty("java.io.tmpdir")
 
     fun getArchivePath(): Path = Paths.get(tmp, pluginName, archiveName)
@@ -67,4 +70,28 @@ object Downloader {
         }
         indicator.fraction = 1.0
     }
+
+    private fun getOperatingSystemType(): OSType {
+        val OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH)
+        if (OS.contains("mac") || OS.contains("darwin")) {
+            return OSType.MACOS
+        } else if (OS.contains("win")) {
+            return OSType.WINDOWS
+        } else if (OS.contains("nux")) {
+            return OSType.LINUX
+        } else {
+            return OSType.OTHER
+        }
+    }
+
+    fun getPathToBeamModule(): String {
+        val os = getOperatingSystemType()
+        var path = getModelPath().toString() + modelSubDir
+        when {
+            os.equals(OSType.MACOS) -> path += beamSubDirMac
+            os.equals(OSType.LINUX) -> path += beamSubDirLinux
+        }
+        return path
+    }
+
 }

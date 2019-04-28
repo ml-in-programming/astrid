@@ -21,6 +21,8 @@
         <applicationService serviceImplementation="stats.RenameMethodStatistics"/>
         <applicationService serviceImplementation="logging.StatsSender"/>
         <applicationService serviceImplementation="logging.RequestService"/>
+
+        <errorHandler implementation="reporting.GitHubErrorReporter"/>
     </extensions>
 
     <actions>

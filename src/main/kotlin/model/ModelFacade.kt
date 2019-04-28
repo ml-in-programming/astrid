@@ -1,9 +1,9 @@
 package model
 
 import com.intellij.psi.PsiMethod
-import downloader.Downloader.beamSubDir
 import downloader.Downloader.dictSubDir
 import downloader.Downloader.getModelPath
+import downloader.Downloader.getPathToBeamModule
 import downloader.Downloader.modelSubDir
 import org.tensorflow.SavedModelBundle
 import org.tensorflow.Session
@@ -21,8 +21,7 @@ import kotlin.collections.ArrayList
 class ModelFacade {
 
     companion object {
-        private val beamSearchModule = org.tensorflow.TensorFlow.loadLibrary(getModelPath().toString() + modelSubDir
-                + beamSubDir);
+        private val beamSearchModule = org.tensorflow.TensorFlow.loadLibrary(getPathToBeamModule());
         private val tfModel: SavedModelBundle = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
     }
 
