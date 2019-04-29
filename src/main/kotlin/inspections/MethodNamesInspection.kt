@@ -42,9 +42,10 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
                         SuggestionsStorage.put(method, suggestionsList)
                     }
                     val suggestions = SuggestionsStorage.getSuggestions(method)
-                    if (!suggestions!!.containsName(method.name)) {
-                        holder.registerProblem(method.nameIdentifier ?: method, "Model has name suggestions for " +
-                                "this method",
+                    if (suggestions != null && suggestions.names.isNotEmpty()
+                            && !suggestions.containsName(method.name)) {
+                        holder.registerProblem(method.nameIdentifier ?: method,
+                                "There are suggestions for method name",
                                 ProblemHighlightType.WEAK_WARNING,
                                 RenameMethodQuickFix(suggestions))
                     }
@@ -69,7 +70,7 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
         }
 
         override fun getFamilyName(): String {
-            return "Get method name suggestions"
+            return "Show method name suggestions"
         }
 
     }
@@ -79,11 +80,11 @@ class MethodNamesInspection : AbstractBaseJavaLocalInspectionTool() {
     }
 
     override fun getGroupDisplayName(): String {
-        return "Plugin Astrid"
+        return "Plugin astrid"
     }
 
     override fun getShortName(): String {
-        return "BestMethodName"
+        return "MethodNamesInspection"
     }
 
 }

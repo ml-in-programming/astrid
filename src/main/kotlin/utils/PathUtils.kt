@@ -9,7 +9,9 @@ object PathUtils {
     }
 
     fun getCombinedPaths(methodBody: String): String {
-        val parts = getContextsFromMethodBody(methodBody).split(' ')
+        val pathContexts: String = getContextsFromMethodBody(methodBody)
+        if (pathContexts.isEmpty()) return ""
+        val parts = pathContexts.split(' ')
         val methodName = parts[0]
         val currentResultLineParts = arrayListOf(methodName)
         val contexts = parts.subList(1, parts.size)

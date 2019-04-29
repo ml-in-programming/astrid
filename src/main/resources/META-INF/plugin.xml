@@ -1,8 +1,7 @@
 <idea-plugin>
     <id>astrid</id>
     <name>astrid</name>
-    <vendor email="zarina.kurbatova@gmail.com">
-    </vendor>
+    <vendor email="zarina.kurbatova@gmail.com">Zarina Kurbatova</vendor>
 
     <description><![CDATA[
     <p>An IntelliJ IDEA plugin that allows to get suggestions for better method names</p>

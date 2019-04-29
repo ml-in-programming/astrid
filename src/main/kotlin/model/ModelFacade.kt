@@ -54,6 +54,7 @@ class ModelFacade {
 
     private fun generatePredictions(methodBody: String): ArrayList<Pair<String, Double>> {
         val paths = getCombinedPaths(methodBody)
+        if (paths.isEmpty()) return arrayListOf()
         val session: Session = tfModel.session()
         val runnerForNames = session.runner()
         val runnerForScores = session.runner()

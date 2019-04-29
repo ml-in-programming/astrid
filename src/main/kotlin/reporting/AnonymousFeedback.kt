@@ -110,7 +110,7 @@ internal object AnonymousFeedback {
 
         if (errorDescription.isNotEmpty()) {
             result.append(errorDescription)
-            result.append("\n\n----------------------\n\n")
+            result.append("\n")
         }
         for ((key, value) in paramsNames) {
             result.append("- ")

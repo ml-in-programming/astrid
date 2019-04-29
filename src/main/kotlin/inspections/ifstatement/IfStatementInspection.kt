@@ -6,10 +6,8 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.DataConstants
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorModificationUtil
 import com.intellij.openapi.project.Project
 import com.intellij.psi.JavaElementVisitor
@@ -23,7 +21,6 @@ import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
 import downloader.Downloader
 import model.ModelFacade
-import org.jetbrains.uast.getContainingClass
 import java.nio.file.Files
 
 class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
@@ -38,7 +35,7 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
             val condition = statement.condition ?: return
             // TODO: Implement more meaningful conditions
             if (condition.textLength > 100) {
-                holder.registerProblem(condition, "Condition is too complex", ProblemHighlightType.WEAK_WARNING,
+                holder.registerProblem(condition, "Condition is too long", ProblemHighlightType.WEAK_WARNING,
                         ExtractIfStatementToMethod())
             }
             super.visitIfStatement(statement)
@@ -97,17 +94,17 @@ class IfStatementInspection : AbstractBaseJavaLocalInspectionTool() {
         }
 
         override fun getFamilyName(): String {
-            return "Extract condition to method"
+            return "If-statement extractor"
         }
 
     }
 
     override fun getDisplayName(): String {
-        return "Extract condition to method"
+        return "Extract long is-statement condition to new method"
     }
 
     override fun getGroupDisplayName(): String {
-        return "Plugin Astrid"
+        return "Plugin astrid"
     }
 
     override fun getShortName(): String {
