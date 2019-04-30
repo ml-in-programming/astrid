@@ -21,10 +21,12 @@ Prerequisites
 * Restart IntelliJ IDEA
 
 ## How to use
-### Generate suggestions by request
-Click on the method name, tap ```Alt+Enter``` and choose ```Generate suggestions```
-### Automate code inspection
-Inspection highlights some method names, you can click on method name, tap ```Alt+Enter``` and choose ```Get method name suggestions```. You can approve one suggestion or ignore. 
+### Intention action
+Click on the method name, press ```Alt+Enter``` and select ```Generate suggestions```
+
+![](https://github.com/ml-in-programming/astrid/blob/master/gifs/astrid_intention.gif)
+### Inspection
+Inspection highlights some method names, you can click on method name, press ```Alt+Enter``` and select ```Get method name suggestions```. You can accept one suggestion or ignore. 
 Also you can suppress inspection's tip on the method by selecting "Suppress on this method". 
 
 ![](https://github.com/ml-in-programming/astrid/blob/master/gifs/astrid_inspection.gif)
