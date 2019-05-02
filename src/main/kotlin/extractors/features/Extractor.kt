@@ -19,7 +19,7 @@ class Extractor(private val code: String) {
         try {
             features = extractFromCodeBlock()
         } catch (e: Exception) {
-            log.error("Error was occurred while parsing method body.", e)
+            log.info("Error was occurred while parsing method body.")
             return ""
         }
         val toPrint = featuresToString(features)
