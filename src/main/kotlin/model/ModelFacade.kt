@@ -1,5 +1,6 @@
 package model
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiMethod
 import downloader.Downloader.dictSubDir
 import downloader.Downloader.getModelPath
@@ -21,6 +22,7 @@ import kotlin.collections.ArrayList
 class ModelFacade {
 
     companion object {
+        private val log: Logger = Logger.getInstance(ModelFacade::class.java)
         private val beamSearchModule = org.tensorflow.TensorFlow.loadLibrary(getPathToBeamModule());
         private val tfModel: SavedModelBundle = SavedModelBundle.load(getModelPath().toString() + modelSubDir, "serve")
     }
@@ -53,31 +55,35 @@ class ModelFacade {
     }
 
     private fun generatePredictions(methodBody: String): ArrayList<Pair<String, Double>> {
-        val paths = getCombinedPaths(methodBody)
-        if (paths.isEmpty()) return arrayListOf()
-        val session: Session = tfModel.session()
-        val runnerForNames = session.runner()
-        val runnerForScores = session.runner()
-        val inputTensor = Tensor.create(paths.toByteArray(Charsets.UTF_8), String::class.java)
-
-        val outputTensorForNames: Tensor<*> = runnerForNames.feed("Placeholder:0", inputTensor).fetch("model/decoder/transpose:0").run()[0]
-        val predictions: List<List<Any>> = parsePredictions(outputTensorForNames) as List<List<Any>>
-        val parsedPredictions: List<String> = parseResults(predictions)
-
-        val outputTensorScores: Tensor<*> = runnerForScores.feed("Placeholder:0", inputTensor).fetch("model/decoder/transpose_1:0").run()[0]
-        val scores: List<Double> = parseScores(outputTensorScores) as List<Double>
-
         val resultPairs: ArrayList<Pair<String, Double>> = ArrayList()
-        for (i in 0 until parsedPredictions.size) {
-            val currentPrediction: String = parsedPredictions[i]
-            if (currentPrediction.isNotEmpty() && !currentPrediction.equals(currentPrediction.toLowerCase())
-                    && !currentPrediction.equals("<UNK>") && !currentPrediction.equals("<PAD>")) {
-                resultPairs.add(Pair(currentPrediction, scores[i]))
+        try {
+            val paths = getCombinedPaths(methodBody)
+            if (paths.isEmpty()) return arrayListOf()
+            val session: Session = tfModel.session()
+            val runnerForNames = session.runner()
+            val runnerForScores = session.runner()
+            val inputTensor = Tensor.create(paths.toByteArray(Charsets.UTF_8), String::class.java)
+
+            val outputTensorForNames: Tensor<*> = runnerForNames.feed("Placeholder:0", inputTensor).fetch("model/decoder/transpose:0").run()[0]
+            val predictions: List<List<Any>> = parsePredictions(outputTensorForNames) as List<List<Any>>
+            val parsedPredictions: List<String> = parseResults(predictions)
+
+            val outputTensorScores: Tensor<*> = runnerForScores.feed("Placeholder:0", inputTensor).fetch("model/decoder/transpose_1:0").run()[0]
+            val scores: List<Double> = parseScores(outputTensorScores) as List<Double>
+
+            for (i in 0 until parsedPredictions.size) {
+                val currentPrediction: String = parsedPredictions[i]
+                if (currentPrediction.isNotEmpty() && !currentPrediction.equals(currentPrediction.toLowerCase())
+                        && !currentPrediction.equals("<UNK>") && !currentPrediction.equals("<PAD>")) {
+                    resultPairs.add(Pair(currentPrediction, scores[i]))
+                }
             }
+            outputTensorForNames.close()
+            outputTensorScores.close()
+        } catch (e: Exception) {
+            log.info("Error was occurred while handling result tensor.")
         }
 
-        outputTensorForNames.close()
-        outputTensorScores.close()
         return resultPairs
     }
 }
