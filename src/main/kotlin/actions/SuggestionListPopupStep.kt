@@ -14,7 +14,7 @@ import inspections.SuggestionsStorage
 import stats.RenameMethodStatistics
 
 class SuggestionListPopupStep(
-        aTitle: String, aValues: Suggestion, private var editor: Editor, private val psiFile: PsiFile
+        aTitle: String, private val aValues: Suggestion, private var editor: Editor, private val psiFile: PsiFile
 ) : BaseListPopupStep<Pair<String, Double>>(aTitle, aValues.names.toMutableList()) {
 
     private var selectedMethodName: Pair<String, Double> = Pair("", 0.0)
@@ -29,7 +29,7 @@ class SuggestionListPopupStep(
         if (selectedMethodName.first == "Suppress on this method") {
             val psiMethod = PsiTreeUtil.getParentOfType(elementAt, PsiMethod::class.java) ?: return
             SuggestionsStorage.setIgnore(psiMethod)
-            RenameMethodStatistics.ignoreCount()
+            RenameMethodStatistics.ignoreCount(aValues.getScores(selectedValue.first))
             return
         }
         val refactoringFactory = RefactoringFactoryImpl.getInstance(editor.project)

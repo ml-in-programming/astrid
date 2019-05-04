@@ -34,4 +34,14 @@ class Suggestion(val names: ArrayList<Pair<String, Double>>) {
             if (pair.first.equals(value)) names.remove(pair)
         }
     }
+
+    fun getScores(except: String): ArrayList<Double> {
+        val scores: ArrayList<Double> = ArrayList()
+        for (pair in names) {
+            if (!except.equals(pair.first)) {
+                scores.add(pair.second)
+            }
+        }
+        return scores
+    }
 }
